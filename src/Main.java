@@ -9,7 +9,7 @@ public class Main {
 	final static boolean fromStdin = false;
 	
 	static BigInteger h, g, p;
-	final static int bits = 52;
+	final static int bits = 51;
 	
 	final static SecureRandom rnd = new SecureRandom();
 	
@@ -27,9 +27,8 @@ public class Main {
 		} else {
 			p = BigInteger.probablePrime(bits, rnd);
 			g = new BigInteger(bits, rnd);
-			g.mod(p.subtract(BigInteger.ONE));
-			g.add(BigInteger.ONE);
-			g.add(BigInteger.ONE);
+			g = g.mod(p.subtract(BigInteger.ONE));
+			g = g.add(BigInteger.ONE).add(BigInteger.ONE);
 			
 			xx = new BigInteger(bits, rnd);
 			xx = xx.mod(p);
