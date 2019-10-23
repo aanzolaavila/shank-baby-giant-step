@@ -6,10 +6,10 @@ import java.util.*;
 
 public class Main {
 	
-	final static boolean fromStdin = false;
+	final static boolean fromStdin = true;
 	
 	static BigInteger h, g, p;
-	final static int bits = 52;
+	final static int bits = 53;
 	
 	final static SecureRandom rnd = new SecureRandom();
 	
@@ -103,7 +103,7 @@ public class Main {
 		assert(m.multiply(m).compareTo(p) >= 0);
 		System.out.println("m: " + m);
 		
-		Map<BigInteger, BigInteger> mem = new HashMap(m.intValue()+1);
+		Map<Long, Integer> mem = new HashMap(m.intValue()+1);
 		
 		/* Baby Step*/
 		System.out.println("Baby Step");
@@ -115,7 +115,7 @@ public class Main {
 			}
 			
 //			mem.put(g.modPow(r, p), r);
-			mem.put(tmp, r);
+			mem.put(tmp.longValue(), r.intValue());
 			tmp = tmp.multiply(g).mod(p);
 		}
 		System.out.println("");
@@ -145,7 +145,7 @@ public class Main {
 		q = BigInteger.ZERO;
 		t = h;
 		while(!finished && q.compareTo(m) < 0) {
-			if (mem.containsKey(t)) {
+			if (mem.containsKey(t.longValue())) {
 				finished = true;
 			} else {
 				t = t.multiply(gInv);
@@ -157,7 +157,7 @@ public class Main {
 //		t = h.multiply(gInv.modPow(q, p)).mod(p);
 //		System.out.println("t: " + t);
 		
-		BigInteger x = m.multiply(q).add(mem.get(t));
+		BigInteger x = m.multiply(q).add(BigInteger.valueOf(mem.get(t.longValue())));
 		
 		return x;
 	}
