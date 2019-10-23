@@ -9,7 +9,7 @@ public class Main {
 	final static boolean fromStdin = false;
 	
 	static BigInteger h, g, p;
-	final static int bits = 51;
+	final static int bits = 52;
 	
 	final static SecureRandom rnd = new SecureRandom();
 	
@@ -24,16 +24,22 @@ public class Main {
 			h = s.nextBigInteger();
 			g = s.nextBigInteger();
 			p = s.nextBigInteger();
+			
+			boolean isPrimitive = isPrimitive(g, p);
+			System.out.println(g + " is primitive: " + isPrimitive);
+			if (!isPrimitive) {
+				return;
+			}
 		} else {
 			p = BigInteger.probablePrime(bits, rnd);
-			g = new BigInteger(bits, rnd);
-			g = g.mod(p.subtract(BigInteger.ONE));
-			g = g.add(BigInteger.ONE).add(BigInteger.ONE);
+//			g = new BigInteger(bits, rnd);
+//			g = g.mod(p.subtract(BigInteger.ONE));
+//			g = g.add(BigInteger.ONE).add(BigInteger.ONE);
+			g = generateRandomPrimitive(p);
 			
 			xx = new BigInteger(bits, rnd);
 			xx = xx.mod(p);
 			
-			System.err.println(xx.compareTo(p) < 0);
 			System.err.println("x: " + xx);
 			
 			h = g.modPow(xx, p);
@@ -52,8 +58,44 @@ public class Main {
 		long end = System.currentTimeMillis();
 		System.out.println(x1 + " vs " + xx + " = " + x1.equals(xx) + " " + 
 				(xx != null ? g.modPow(xx, p).equals(g.modPow(x1, p)) : false));
+		System.out.println("h == g^x mod p = " + h.equals(g.modPow(x1, p)));
 		
 		System.out.println("time: " + (end - start));
+	}
+	
+	static public BigInteger generateRandomPrimitive(BigInteger p) {
+		BigInteger g = null;
+		
+		while(g == null) {
+			g = new BigInteger(bits, rnd);
+			g = g.mod(p);
+			
+			if(! isPrimitive(g, p)) {
+				g = null;
+			}
+		}
+		
+		
+		return g;
+	}
+	
+	static public boolean isPrimitive(BigInteger g, BigInteger p) {
+		if (g.compareTo(BigInteger.ZERO) == 0) {
+			return false;
+		}
+		
+		// Check that g^2 != 1 mod p
+		if (g.modPow(new BigInteger("2"), p).compareTo(BigInteger.ONE) == 0) {
+			return false;
+		}
+		
+		// Check that g^((p-1)/2) != 1 mod p
+		BigInteger tmp = g.modPow(g, p.subtract(BigInteger.ONE).divide(new BigInteger("2")));
+		if (tmp.compareTo(BigInteger.ONE) == 0) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	static public BigInteger calc(BigInteger h, BigInteger g, BigInteger p) {
@@ -61,17 +103,22 @@ public class Main {
 		assert(m.multiply(m).compareTo(p) >= 0);
 		System.out.println("m: " + m);
 		
-		Map<BigInteger, BigInteger> mem = new HashMap();
+		Map<BigInteger, BigInteger> mem = new HashMap(m.intValue()+1);
 		
 		/* Baby Step*/
 		System.out.println("Baby Step");
 		
 		BigInteger tmp = BigInteger.ONE;
 		for(BigInteger r = BigInteger.ZERO; r.compareTo(m) < 0; r = r.add(BigInteger.ONE)) {
+			if (r.mod(m.divide(BigInteger.valueOf(10))).equals(BigInteger.ZERO)) {
+				System.out.print(r.multiply(BigInteger.valueOf(100)).divide(m) + "%..");
+			}
+			
 //			mem.put(g.modPow(r, p), r);
 			mem.put(tmp, r);
 			tmp = tmp.multiply(g).mod(p);
 		}
+		System.out.println("");
 		
 //		System.out.println("Memorization: " + mem);
 		
